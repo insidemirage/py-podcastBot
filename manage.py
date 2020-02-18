@@ -2,11 +2,30 @@ import os
 import argparse
 import sys
 import json
-
+import sqlite3
 
 
 def get_folder() -> str:
     return os.path.dirname(os.path.abspath(__file__))
+
+
+def drop_db_handler(dbname) -> bool:
+    path = f"{get_folder()}/{dbname}.db"
+    if os.path.isfile(path):
+        os.remove(path)
+        return True
+    else:
+        print("No db file")
+        return False
+
+
+def create_db_handler(dbname) -> bool:
+    path = f"{get_folder()}/{dbname}.db"
+    try:
+        sqlite3.connect(path)
+        return True
+    except sqlite3.Error:
+        return False
 
 
 def setup_handler() -> bool:
@@ -58,6 +77,7 @@ def set_handler(settings: dict) -> bool:
 
     print(settings_file)
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Manage bot settings")
     commands_parser = parser.add_subparsers(help="Command for manage token/proxy")
@@ -65,8 +85,15 @@ if __name__ == "__main__":
     parser_set.add_argument("-p", help="set the proxy, usage: set/drop -p [proxy_link]", dest="proxy", type=str)
     parser_set.add_argument("-t", help="set the token, usage: set/drop -t [token]", dest="token", type=str)
     parser_set.set_defaults(which="set")
+    parser_dropbd = commands_parser.add_parser("drop", help="Drops database")
+    parser_dropbd.add_argument("dbname", dest="dbname")
+    parser_dropbd.set_defaults(which="dropdb")
+    parser_createdb = commands_parser.add_parser("createbd")
+    parser_createdb.add_argument("dbname", dest="dbname")
+    parser_createdb.set_defaults(which="createdb")
     args = parser.parse_args()
     # if args.which is "set":
     #     result = {"proxy": args.proxy, "token": args.token}
     # print(load_json_settings())
-    setup_handler()
+    # setup_handler()
+    create_db_handler("123")
